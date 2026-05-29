@@ -1,17 +1,24 @@
 import asyncio
 import random
 import time
+import sys
+
+# ===== PYTHON 3.14 FIX (Render ke liye) =====
+if sys.version_info >= (3, 10):
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
 # ================= CONFIG =================
-
-API_ID = 12345678
-API_HASH = "YOUR_API_HASH"
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-
-OWNER_ID = 123456789
-
+# 🔴 YAHAN APNI DETAILS DALO (EDIT KARO) 🔴
+API_ID = 37668994  # Apna REAL API ID yahan dalo
+API_HASH = "03cc2efbe99c77eb9dc11e64fb779f2a"  # Apna REAL API Hash yahan dalo
+BOT_TOKEN = "8201713984:AAHw9-fdhAdS1ZQRzCMaZsTGP5dbkryC8yk"  # Apna REAL Bot Token yahan dalo
+OWNER_ID = 8722144519  # Apna REAL Telegram ID yahan dalo
 # ==========================================
 
 app = Client(
@@ -22,14 +29,12 @@ app = Client(
 )
 
 # ===== STORAGE =====
-
 sudo_users = set()
 raid_running = {}
 
 # ===== CUSTOM LINES =====
-# Yaha apni custom lines add karo
-
 CUSTOM_LINES = [
+    
     "🔥 teri mummy ki chut!",
     "⚡ bahen k lode teri dadi ki black hairy pussy",
     "🚀 teri mummy ko ulta ltkakr taangduga aur uski chut maruga!",
@@ -148,55 +153,36 @@ CUSTOM_LINES = [
 
 # ==========================================
 
-# ===== CHECK SUDO =====
-
 def is_sudo(user_id):
     return user_id == OWNER_ID or user_id in sudo_users
 
-# ==========================================
-
 # ===== ALIVE =====
-
 @app.on_message(filters.command("alive", prefixes="."))
 async def alive(_, message: Message):
     if not is_sudo(message.from_user.id):
         return await message.reply("SUDO NEHI HAI JAKE SUDO LE")
-
     await message.reply("READY")
 
-# ==========================================
-
 # ===== SPEED =====
-
 @app.on_message(filters.command("speed", prefixes="."))
 async def speed(_, message: Message):
     if not is_sudo(message.from_user.id):
         return await message.reply("SUDO NEHI HAI JAKE SUDO LE")
-
     await message.reply("SUPER FAST")
 
-# ==========================================
-
 # ===== PING =====
-
 @app.on_message(filters.command("ping", prefixes="."))
 async def ping(_, message: Message):
     if not is_sudo(message.from_user.id):
         return await message.reply("SUDO NEHI HAI JAKE SUDO LE")
-
+    
     start = time.time()
-
     msg = await message.reply("Pinging...")
-
     end = time.time()
     speed = round((end - start) * 1000)
-
     await msg.edit(f"PONG ⚡\nSpeed: {speed} ms")
 
-# ==========================================
-
 # ===== HELP =====
-
 @app.on_message(filters.command("help", prefixes="."))
 async def help_cmd(_, message: Message):
     text = """
@@ -216,110 +202,95 @@ async def help_cmd(_, message: Message):
 .add
 .del
 """
-
     await message.reply(text)
 
-# ==========================================
-
 # ===== ADD SUDO =====
-
 @app.on_message(filters.command("add", prefixes="."))
 async def add_sudo(_, message: Message):
-
     if message.from_user.id != OWNER_ID:
         return await message.reply("SIRF OWNER USE KAR SAKTA HAI")
-
+    
     if not message.reply_to_message:
         return await message.reply("KISI USER KO REPLY KARKE .add LIKHO")
-
+    
     user_id = message.reply_to_message.from_user.id
     sudo_users.add(user_id)
-
     await message.reply("SUDO ADD HO GAYA ✅")
 
-# ==========================================
-
 # ===== DEL SUDO =====
-
 @app.on_message(filters.command("del", prefixes="."))
 async def del_sudo(_, message: Message):
-
     if message.from_user.id != OWNER_ID:
         return await message.reply("SIRF OWNER USE KAR SAKTA HAI")
-
+    
     if not message.reply_to_message:
         return await message.reply("KISI USER KO REPLY KARKE .del LIKHO")
-
+    
     user_id = message.reply_to_message.from_user.id
-
     if user_id in sudo_users:
         sudo_users.remove(user_id)
         await message.reply("SUDO REMOVE HO GAYA ❌")
     else:
         await message.reply("YE USER SUDO ME NAHI HAI")
 
-# ==========================================
-
 # ===== RAID =====
-
 @app.on_message(filters.command("r", prefixes="."))
 async def raid(_, message: Message):
-
     if not is_sudo(message.from_user.id):
         return await message.reply("SUDO NEHI HAI JAKE SUDO LE")
-
+    
     if not message.reply_to_message:
         return await message.reply("SIR KISI KO TAG KARO")
-
+    
     target = message.reply_to_message.from_user
     chat_id = message.chat.id
-
+    
     args = message.text.split()
-
     count = 1
-
+    
     if len(args) > 1:
         try:
             count = int(args[1])
         except:
             count = 1
-
+    
     raid_running[chat_id] = True
-
+    
     for i in range(count):
-
         if not raid_running.get(chat_id):
             break
-
+        
         line = random.choice(CUSTOM_LINES)
-
         text = f"[{target.first_name}](tg://user?id={target.id}) {line}"
-
-        await app.send_message(
-            chat_id,
-            text
-        )
-
+        await app.send_message(chat_id, text)
         await asyncio.sleep(1)
 
-# ==========================================
-
 # ===== STOP RAID =====
-
 @app.on_message(filters.command("stopr", prefixes="."))
 async def stop_raid(_, message: Message):
-
     if not is_sudo(message.from_user.id):
         return await message.reply("SUDO NEHI HAI JAKE SUDO LE")
-
+    
     chat_id = message.chat.id
-
     raid_running[chat_id] = False
-
     await message.reply("HO GEYA KAM AAPKA MY MASTER")
 
+# ===== KEEP ALIVE FOR RENDER (PORT FIX) =====
+from flask import Flask
+from threading import Thread
+
+flask_app = Flask(__name__)
+
+@flask_app.route('/')
+def home():
+    return "Bot is running!"
+
+def run_flask():
+    flask_app.run(host='0.0.0.0', port=8080)
+
+# Start Flask server in background
+Thread(target=run_flask, daemon=True).start()
+
 # ==========================================
-
-print("BOT STARTED ⚡")
-
+print("⚡ BOT STARTED ⚡")
 app.run()
